@@ -78,7 +78,8 @@ li{margin-bottom:8px}
 
 /* ── Hero (dark) ── */
 .hero{background:linear-gradient(170deg,#1B3068 0%,#0D1A45 58%,#0A1436 100%);color:#E7ECF7;text-align:center;
-  padding:96px 22px 0;position:relative;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center}
+  padding:96px 22px 0;position:relative;overflow:hidden;min-height:100vh;min-height:100dvh;
+  display:flex;align-items:center;justify-content:center}
 
 .hero-glow{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;will-change:transform}
 .hero-glow-1{width:600px;height:600px;background:radial-gradient(circle,rgba(70,110,220,.25) 0%,transparent 70%);
@@ -131,7 +132,7 @@ li{margin-bottom:8px}
 .tbar{display:flex;align-items:center;gap:7px;padding:11px 15px;border-bottom:1px solid rgba(255,255,255,.09)}
 .td{width:12px;height:12px;border-radius:50%}
 .tname{margin-left:10px;font-family:var(--f-m);font-size:11px;color:rgba(231,236,247,.42)}
-.tbody{padding:20px 24px 24px;font-family:var(--f-m);font-size:12.5px;line-height:1.95;color:#C9D6F2;min-height:308px;white-space:pre-wrap;word-break:break-word;letter-spacing:0}
+.tbody{padding:20px 24px 24px;font-family:var(--f-m);font-size:12.5px;line-height:1.95;color:#C9D6F2;min-height:280px;white-space:pre-wrap;word-break:break-word;letter-spacing:0}
 .tbody .k{color:#7FA3E8} .tbody .v{color:#E7ECF7} .tbody .h{color:#8FB0F0;font-weight:500}
 .tbody .ok{color:#5FD08A} .tbody .dim{color:rgba(201,214,242,.4)}
 .caret{display:inline-block;width:7px;height:1em;background:#7FA3E8;vertical-align:-2px;animation:blink 1.05s steps(1) infinite}
@@ -338,16 +339,26 @@ footer{background:linear-gradient(160deg,#1B3068,#0D1A45);padding:48px 22px;font
 
 .hero-brand img{transition:opacity .3s}
 .hero-brand .logo-white{filter:brightness(0) invert(1)}
+.hero-logo-mitc{height:clamp(44px,12vw,90px);max-width:40vw;object-fit:contain}
+.hero-logo-omni{height:clamp(80px,26vw,200px);max-width:50vw;object-fit:contain}
+.hero-logo-plus{font-size:clamp(18px,3vw,30px);color:rgba(231,236,247,.35);font-weight:300}
+
+/* ── Table wrapper for mobile ── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:20px}
+.table-wrap table{min-width:520px}
 
 .footer-powered{display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(231,236,247,.5)}
 .footer-powered img{height:32px;opacity:.8;filter:brightness(0) invert(1)}
 
 /* ── Responsive ── */
+
+/* Tablet */
 @media (max-width:860px){
   .grid2{grid-template-columns:1fr}
   .mod-in{padding-left:30px}
   section{padding:76px 20px}
-  .hero{padding-top:64px}
+  .hero{padding-top:64px;min-height:auto;align-items:flex-start}
+  .hero-in{padding-bottom:64px}
   .stats{flex-wrap:wrap;gap:22px 0}
   .stat{flex:0 0 50%}
   .stat+.stat::before{display:none}
@@ -359,20 +370,108 @@ footer{background:linear-gradient(160deg,#1B3068,#0D1A45);padding:48px 22px;font
   .hero-event{gap:12px 24px}
   .hero-instructor{padding:20px;max-width:100%}
   .footer-powered{justify-content:flex-end}
+  .mod-h{padding:22px 20px}
+  .mod-h h3{font-size:19px}
+  .tbody{min-height:220px;font-size:11.5px;padding:16px 18px 18px}
+  .term-wrap{margin-top:40px}
 }
+
+/* Phone */
 @media (max-width:480px){
-  .hero{padding-top:48px}
-  .hero-brand{flex-wrap:wrap;justify-content:center;gap:8px}
-  .countdown{gap:6px}
-  .cd-unit{min-width:52px}
-  .cd-num{padding:10px 6px;border-radius:10px}
-  .cd-sep{font-size:22px;padding-top:10px}
-  .hero-event{flex-direction:column;gap:10px}
-  .hero-instructor{padding:16px}
-  .hero-powered{flex-direction:column;gap:8px}
-  .fin{flex-direction:column;gap:24px}
+  .hero{padding:48px 16px 0;min-height:auto;align-items:flex-start}
+  .hero-in{padding-bottom:48px}
+  .hero-brand{flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:28px}
+  .hero-logo-mitc{height:40px;max-width:35vw}
+  .hero-logo-omni{height:72px;max-width:45vw}
+  .hero-logo-plus{font-size:16px}
+  .kicker{font-size:11px;letter-spacing:.12em;margin-bottom:14px}
+  .hero h1{font-size:clamp(34px,9vw,44px)}
+  .hero-sub{font-size:17px;max-width:28ch}
+  .stats{margin-top:32px;gap:18px 0}
+  .stat .v{font-size:clamp(22px,6vw,30px)}
+  .stat .l{font-size:10px}
+  .countdown{gap:6px;margin-top:32px}
+  .cd-unit{min-width:auto;flex:1}
+  .cd-num{padding:10px 6px;border-radius:10px;font-size:clamp(28px,7vw,36px)}
+  .cd-sep{font-size:20px;padding-top:10px}
+  .cd-label{font-size:9px}
+  .hero-event{flex-direction:column;gap:10px;margin-top:24px}
+  .hero-event-item .ev-text{font-size:clamp(20px,5.5vw,26px)}
+  .hero-event-item svg{width:22px;height:22px;flex:0 0 22px}
+  .hero-instructor{padding:16px;margin-top:24px;border-radius:14px}
+  .hero-instructor-name{font-size:19px}
+  .hero-instructor-role{font-size:13px}
+  .hero-instructor-email{font-size:13px}
+  .hero-powered{flex-direction:column;gap:8px;margin-top:24px}
+  .hero-powered img{height:32px}
+  .term-wrap{margin-top:32px}
+  .tbody{min-height:180px;font-size:11px;padding:14px 14px 16px}
+  .tname{font-size:9.5px}
+  section{padding:56px 16px}
+  .shead{margin-bottom:36px}
+  .shead h2{font-size:clamp(26px,6.5vw,34px)}
+  .shead p{font-size:16px;margin-top:14px}
+  .card{padding:24px;border-radius:18px}
+  .card h3{font-size:19px}
+  .card p,.card li{font-size:15px}
+  .mod{border-radius:18px}
+  .mod-h{padding:20px 16px;gap:12px}
+  .mod-h h3{font-size:17px}
+  .mod-h .meta{font-size:11px}
+  .mod-i{width:30px;height:30px;border-radius:9px;font-size:11px}
+  .mod-in{padding:0 16px 20px 48px}
+  .mod-in li{font-size:14px}
+  .plus{width:24px;height:24px}
+  .plus::before{width:10px} .plus::after{height:10px}
+  .lab{padding:14px 16px;font-size:14px;border-radius:0 12px 12px 0}
+  pre{padding:14px 16px;font-size:12px;border-radius:12px}
+  .gl{padding:20px;border-radius:14px}
+  .gl-tabs{gap:4px}
+  .gl-tab{padding:6px 12px;font-size:13px}
+  .gl-p h4{font-size:17px}
+  .gl-p p{font-size:15px}
+  .gl-p .ex{padding:10px 12px;font-size:12px}
+  .pills{gap:6px}
+  .pill{font-size:13px;padding:6px 12px}
+  .oa{gap:12px;padding:16px 0}
+  .oa .n{flex:0 0 36px;font-size:11px}
+  .oa .t{font-size:15px}
+  .rail{padding:20px;border-radius:18px}
+  .rbar{height:40px;border-radius:10px}
+  .rleg{gap:12px}
+  .rleg div .n{font-size:14px}
+  .rleg div .d{font-size:12px}
+  .kpi{padding:24px;border-radius:18px}
+  .kpi .num{font-size:44px}
+  .kpi .num small{font-size:20px}
+  .kpi .lb{font-size:14px}
+  .eyebrow{font-size:11px}
+  table{font-size:14px}
+  th,td{padding:12px 14px}
+  footer{padding:36px 16px}
+  .fin{gap:20px}
   .fin>div:last-child{text-align:left}
   .footer-powered{justify-content:flex-start}
+}
+
+/* Very small phones */
+@media (max-width:360px){
+  .hero{padding:40px 12px 0}
+  .hero-in{padding-bottom:40px}
+  .hero-logo-mitc{height:32px}
+  .hero-logo-omni{height:56px}
+  .hero h1{font-size:clamp(28px,8.5vw,36px)}
+  .cd-num{font-size:clamp(24px,7vw,30px);padding:8px 4px}
+  .cd-sep{font-size:18px;padding-top:8px}
+  .cd-label{font-size:8px;letter-spacing:.06em}
+  .hero-event-item .ev-text{font-size:clamp(18px,5vw,22px)}
+  .hero-instructor{padding:14px}
+  .hero-instructor-name{font-size:17px}
+  .hero-instructor-role,.hero-instructor-email{font-size:12px}
+  .card{padding:20px}
+  .mod-h{padding:16px 14px}
+  .mod-in{padding:0 14px 16px 42px}
+  section{padding:44px 12px}
 }
 
 /* ── Reduced Motion (Apple: cross-fade, no springs/slides) ── */
@@ -432,9 +531,9 @@ footer{background:linear-gradient(160deg,#1B3068,#0D1A45);padding:48px 22px;font
 
   <div class="hero-in">
     <div class="hero-brand">
-      <img src="MITC blanco.png" alt="Monterrey IT Cluster" style="height:clamp(60px,12vw,90px)">
-      <span style="font-size:clamp(22px,3vw,30px);color:rgba(231,236,247,.35);font-weight:300">+</span>
-      <img src="logo30color.png" alt="OmniSys 30 años" class="logo-white" style="height:clamp(140px,26vw,200px)">
+      <img src="MITC blanco.png" alt="Monterrey IT Cluster" class="hero-logo-mitc">
+      <span class="hero-logo-plus">+</span>
+      <img src="logo30color.png" alt="OmniSys 30 años" class="logo-white hero-logo-omni">
     </div>
     <div class="kicker">Taller práctico · 3 horas</div>
     <h1>
@@ -568,7 +667,7 @@ footer{background:linear-gradient(160deg,#1B3068,#0D1A45);padding:48px 22px;font
       <h2>Al salir vas a poder hacer siete cosas</h2>
       <p>Cada una se verifica con evidencia dentro del taller, no con una encuesta de satisfacción.</p>
     </div>
-    <div class="card rv" style="padding:14px 32px" data-glow>
+    <div class="card rv" style="padding:14px clamp(16px,4vw,32px)" data-glow>
       <div class="oa"><div class="n">OA-1</div><div class="t"><b>Explicar</b> qué son las skills, dónde residen y cómo Claude Code las relaciona con una solicitud.</div></div>
       <div class="oa"><div class="n">OA-2</div><div class="t"><b>Crear</b> una skill desde cero con frontmatter válido en <code>SKILL.md</code> y verificar que carga.</div></div>
       <div class="oa"><div class="n">OA-3</div><div class="t"><b>Redactar</b> nombres y descripciones que disparen la skill en el momento correcto: gerundio, tercera persona, qué hace más cuándo usarla; y acotar herramientas con <code>allowed-tools</code>.</div></div>
@@ -723,7 +822,8 @@ pruebas que quedaron desactualizadas.</pre>
             <li>Árbol de decisión por naturaleza del contenido: hecho permanente, procedimiento, tarea aislada, regla determinista o acceso a sistema externo.</li>
             <li><code>context: fork</code> ejecuta la skill como subagente con su propio contexto. Advertencia: una skill de solo lineamientos ejecutada como fork devuelve poco, porque el subagente recibe guías sin tarea.</li>
           </ul>
-          <table style="margin-top:18px">
+          <div class="table-wrap" style="margin-top:18px">
+          <table>
             <thead><tr><th style="width:26%">Capa</th><th>Úsala cuando</th></tr></thead>
             <tbody>
               <tr><td class="k">CLAUDE.md</td><td>Es un hecho estable del proyecto que conviene tener siempre en contexto.</td></tr>
@@ -733,6 +833,7 @@ pruebas que quedaron desactualizadas.</pre>
               <tr><td class="k">Servidor MCP</td><td>Hace falta conectarse a un sistema externo: GitHub, Jira, una base de datos.</td></tr>
             </tbody>
           </table>
+          </div>
           <div class="lab"><b>Laboratorio 4 · 10 min</b>Tres casos en tarjetas: "el equipo siempre olvida correr el linter", "necesito el esquema de la base al analizar queries", "quiero un análisis de dependencias sin ensuciar mi contexto". Cada mesa asigna capa y la defiende en 60 segundos.</div>
         </div></div></div>
       </article>
@@ -833,7 +934,7 @@ pruebas que quedaron desactualizadas.</pre>
       <div class="eyebrow">Logística</div>
       <h2>Qué se necesita para que la sesión corra</h2>
     </div>
-    <div class="rv">
+    <div class="rv table-wrap">
       <table>
         <thead><tr><th style="width:26%">Elemento</th><th>Requisito</th></tr></thead>
         <tbody>
@@ -856,7 +957,7 @@ pruebas que quedaron desactualizadas.</pre>
       <div class="eyebrow">Evaluación</div>
       <h2>Evidencias, no percepciones</h2>
     </div>
-    <div class="rv">
+    <div class="rv table-wrap">
       <table>
         <thead><tr><th style="width:20%">Momento</th><th style="width:28%">Instrumento</th><th>Evidencia esperada</th></tr></thead>
         <tbody>
@@ -918,7 +1019,7 @@ pruebas que quedaron desactualizadas.</pre>
       <div class="eyebrow">Riesgos</div>
       <h2>Qué puede salir mal</h2>
     </div>
-    <div class="rv">
+    <div class="rv table-wrap">
       <table>
         <thead><tr><th style="width:30%">Riesgo</th><th style="width:14%">Impacto</th><th>Mitigación</th></tr></thead>
         <tbody>
