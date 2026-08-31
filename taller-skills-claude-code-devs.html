@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skills con Claude Code · Taller para desarrolladores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#E31920;
+  --red-hot:#FF3A41;
+  --navy:#1B3068;
+  --night:#0D1A45;
+  --grad:linear-gradient(135deg,#B5000C,#E00010);
+
+  --ink:#0D1A45;
+  --ink-2:#2A3850;
+  --ink-3:#78909C;
+  --bg:#FFFFFF;
+  --bg-alt:#F7F9FC;
+  --line:rgba(27,48,104,.13);
+  --line-solid:#DDE3E7;
+  --card:#FFFFFF;
+  --accent:#1B3068;
+  --accent-soft:rgba(27,48,104,.08);
+  --spark:#E31920;
+  --spark-soft:rgba(227,25,32,.10);
+  --dark:#1B3068;
+  --dark-2:#0D1A45;
+
+  --f:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --f-d:"Syne","IBM Plex Sans",system-ui,sans-serif;
+  --f-m:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  /* Apple-style spring curves: critically damped (no overshoot) for UI, slight bounce for momentum */
+  --spring:cubic-bezier(.2,.9,.3,1);
+  --spring-bounce:cubic-bezier(.175,.885,.32,1.08);
+  --ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --w:980px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:#fff;color:var(--ink);font-family:var(--f);font-size:17px;line-height:1.55;letter-spacing:-.005em;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;
+  font-optical-sizing:auto;text-rendering:optimizeLegibility}
+/* Apple typography: size-specific tracking + leading */
+h1,h2,h3,h4{font-family:var(--f-d);font-weight:700;line-height:1.08;color:var(--ink);font-optical-sizing:auto}
+h1{letter-spacing:-.045em}
+h2{letter-spacing:-.035em;line-height:1.06}
+h3{letter-spacing:-.02em;line-height:1.15}
+h4{letter-spacing:-.015em;line-height:1.2}
+p{margin:0 0 16px;letter-spacing:-.005em}
+a{color:var(--navy);text-decoration:none;transition:color .3s var(--spring)}
+a:hover{text-decoration:underline}
+code{font-family:var(--f-m);font-size:.87em;background:var(--bg-alt);padding:2px 7px;border-radius:6px;letter-spacing:.01em}
+ul{margin:0;padding-left:20px}
+li{margin-bottom:8px}
+
+/* ── Scroll Progress ── */
+#prog{position:fixed;top:0;left:0;height:2px;width:0;
+  background:linear-gradient(90deg,var(--navy),#4A6FC4,var(--spark));z-index:200;
+  box-shadow:2px 0 0 var(--spark)}
+
+/* ── Nav (translucent material) ── */
+.nav{position:sticky;top:0;z-index:80;height:52px;display:flex;align-items:center;justify-content:center;gap:4px;
+  background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-bottom:1px solid rgba(27,48,104,.08);padding:0 20px;overflow-x:auto;scrollbar-width:none;
+  transition:transform .5s var(--spring),background .4s ease,box-shadow .4s ease}
+.nav::-webkit-scrollbar{display:none}
+.nav.hidden{transform:translateY(-100%)}
+.nav.scrolled{box-shadow:0 1px 20px rgba(13,26,69,.06)}
+.nav a{font-size:12.5px;color:var(--ink-2);padding:7px 13px;border-radius:100px;white-space:nowrap;
+  letter-spacing:.01em;transition:all .4s var(--spring);-webkit-tap-highlight-color:transparent}
+.nav a:hover{color:var(--navy);background:var(--accent-soft);text-decoration:none}
+.nav a:active{transform:scale(.95);transition:transform .1s ease-out}
+.nav a.on{color:var(--navy);font-weight:600;background:var(--accent-soft)}
+
+/* ── Hero (dark) ── */
+.hero{background:linear-gradient(170deg,#1B3068 0%,#0D1A45 58%,#0A1436 100%);color:#E7ECF7;text-align:center;
+  padding:96px 22px 0;position:relative;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+.hero-glow{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;will-change:transform}
+.hero-glow-1{width:600px;height:600px;background:radial-gradient(circle,rgba(70,110,220,.25) 0%,transparent 70%);
+  top:20%;left:50%;transform:translate(-50%,-50%);animation:glowFloat1 8s ease-in-out infinite}
+.hero-glow-2{width:400px;height:400px;background:radial-gradient(circle,rgba(227,25,32,.12) 0%,transparent 70%);
+  top:70%;left:25%;animation:glowFloat2 10s ease-in-out infinite}
+.hero-glow-3{width:350px;height:350px;background:radial-gradient(circle,rgba(74,100,196,.1) 0%,transparent 70%);
+  top:30%;right:10%;animation:glowFloat3 12s ease-in-out infinite}
+@keyframes glowFloat1{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-45%,-55%) scale(1.18)}}
+@keyframes glowFloat2{0%,100%{transform:scale(1)}50%{transform:translate(5%,-5%) scale(1.2)}}
+@keyframes glowFloat3{0%,100%{transform:scale(1)}50%{transform:translate(-5%,5%) scale(1.1)}}
+
+.particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.particle{position:absolute;width:3px;height:3px;background:rgba(255,255,255,.15);border-radius:50%;animation:particleFloat linear infinite}
+@keyframes particleFloat{0%{transform:translateY(0) scale(0);opacity:0}10%{opacity:1;transform:translateY(0) scale(1)}90%{opacity:1}100%{transform:translateY(-100vh) scale(0);opacity:0}}
+
+.hero-in{max-width:var(--w);margin:0 auto;position:relative;z-index:2;padding-bottom:96px}
+.hero-brand{display:inline-flex;align-items:center;gap:16px;margin-bottom:40px;opacity:0;transform:translateY(20px);animation:springUp .8s var(--spring) .02s forwards}
+.hb-div{width:1px;height:20px;background:rgba(255,255,255,.24)}
+.hb-tag{font-family:var(--f-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(231,236,247,.55)}
+.brand{font-family:Verdana,Geneva,sans-serif;font-weight:700;font-size:18px;color:#fff}
+.brand .o{color:var(--red-hot)} .brand .s{font-style:italic;color:#fff}
+.kicker{font-family:var(--f-m);font-size:12.5px;font-weight:500;color:#8FB0F0;letter-spacing:.16em;text-transform:uppercase;
+  margin-bottom:18px;opacity:0;animation:springUp .85s var(--spring) .05s forwards;transform:translateY(18px)}
+.hero h1{font-size:clamp(44px,7.4vw,84px);font-weight:800;letter-spacing:-.045em;line-height:1.02;color:#fff}
+.hero h1 .word{display:inline-block;opacity:0;transform:translateY(28px) rotateX(10deg);animation:wordReveal .75s var(--ease-out-expo) forwards}
+.hero h1 .g{background:linear-gradient(95deg,#7FA3E8,#D4E0F8);background-size:200% 200%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:wordReveal .8s var(--ease-out-expo) forwards,gradientShift 6s ease-in-out infinite}
+@keyframes wordReveal{to{opacity:1;transform:translateY(0) rotateX(0)}}
+@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(19px,2.4vw,25px);color:rgba(231,236,247,.72);max-width:23ch;margin:22px auto 0;line-height:1.38;
+  letter-spacing:-.015em;opacity:0;animation:springUp .9s var(--spring) .7s forwards;transform:translateY(18px)}
+
+.stats{display:flex;justify-content:center;gap:0;margin:44px auto 0;max-width:660px;opacity:0;animation:springUp .9s var(--spring) .85s forwards;transform:translateY(18px)}
+.stat{flex:1;padding:0 12px;position:relative}
+.stat+.stat::before{content:"";position:absolute;left:0;top:16%;height:68%;width:1px;background:rgba(255,255,255,.14)}
+.stat .v{font-family:var(--f-d);font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-.04em;color:#fff}
+.stat .l{font-family:var(--f-m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(231,236,247,.5);margin-top:6px}
+
+@keyframes springUp{to{opacity:1;transform:none}}
+
+/* ── Terminal (glass material) ── */
+.term-wrap{max-width:720px;margin:56px auto 0;perspective:1200px;opacity:0;animation:springUp 1s var(--spring) 1.2s forwards;transform:translateY(18px)}
+.term-device{will-change:transform;transition:transform .18s var(--spring)}
+.term{background:rgba(6,13,36,.68);border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.45),0 0 0 .5px rgba(255,255,255,.06) inset,0 0 60px rgba(70,110,220,.05);
+  backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);text-align:left;transition:box-shadow .5s var(--spring)}
+.term-wrap:hover .term{box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.08) inset,0 0 80px rgba(70,110,220,.08)}
+.tbar{display:flex;align-items:center;gap:7px;padding:11px 15px;border-bottom:1px solid rgba(255,255,255,.09)}
+.td{width:12px;height:12px;border-radius:50%}
+.tname{margin-left:10px;font-family:var(--f-m);font-size:11px;color:rgba(231,236,247,.42)}
+.tbody{padding:20px 24px 24px;font-family:var(--f-m);font-size:12.5px;line-height:1.95;color:#C9D6F2;min-height:308px;white-space:pre-wrap;word-break:break-word;letter-spacing:0}
+.tbody .k{color:#7FA3E8} .tbody .v{color:#E7ECF7} .tbody .h{color:#8FB0F0;font-weight:500}
+.tbody .ok{color:#5FD08A} .tbody .dim{color:rgba(201,214,242,.4)}
+.caret{display:inline-block;width:7px;height:1em;background:#7FA3E8;vertical-align:-2px;animation:blink 1.05s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ── Sections (white base) ── */
+section{padding:120px 22px}
+section.alt{background:var(--bg-alt);border-top:1px solid rgba(27,48,104,.06);border-bottom:1px solid rgba(27,48,104,.06)}
+section.dark{background:linear-gradient(160deg,#1B3068,#0D1A45);color:#E7ECF7}
+section.dark h2,section.dark h3{color:#fff}
+.wrap{max-width:var(--w);margin:0 auto}
+.eyebrow{font-family:var(--f-m);font-size:12px;font-weight:500;color:var(--navy);letter-spacing:.16em;text-transform:uppercase;
+  margin-bottom:14px;display:inline-flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--spark);flex:0 0 5px}
+section.dark .eyebrow{color:#8FB0F0}
+.shead{text-align:center;margin-bottom:56px}
+.shead h2{font-size:clamp(32px,4.6vw,52px);letter-spacing:-.035em;line-height:1.05}
+.shead p{font-size:clamp(17px,2vw,21px);color:var(--ink-2);max-width:46ch;margin:20px auto 0;line-height:1.45;letter-spacing:-.01em}
+section.dark .shead p{color:rgba(231,236,247,.72)}
+
+/* ── Reveal (Apple-style: shorter travel, ease-out settle) ── */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease-out-expo),transform .7s var(--spring)}
+.rv.in{opacity:1;transform:none}
+.rv[data-d="1"]{transition-delay:.08s} .rv[data-d="2"]{transition-delay:.16s} .rv[data-d="3"]{transition-delay:.24s}
+
+/* ── Cards (Apple depth + press feedback) ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:32px;
+  transition:transform .5s var(--spring),box-shadow .5s var(--spring),border-color .35s ease;
+  position:relative;overflow:hidden;will-change:transform}
+.card::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(27,48,104,.05) 0%,transparent 55%);
+  opacity:0;transition:opacity .4s ease;pointer-events:none}
+.card:hover::before{opacity:1}
+.card:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(13,26,69,.08),0 8px 20px rgba(13,26,69,.04);border-color:rgba(27,48,104,.18)}
+.card:active{transform:translateY(-1px) scale(.985);transition:transform .12s ease-out}
+section.alt .card{background:#fff;border:1px solid var(--line)}
+section.dark .card{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px)}
+section.dark .card::before{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.04) 0%,transparent 55%)}
+section.dark .card:hover{border-color:rgba(255,255,255,.18);box-shadow:0 20px 50px rgba(0,0,0,.25),0 8px 20px rgba(0,0,0,.12)}
+.card h3{font-size:21px;margin-bottom:12px;letter-spacing:-.02em;line-height:1.15}
+.card p,.card li{font-size:16px;color:var(--ink-2);line-height:1.52;letter-spacing:-.005em}
+section.dark .card p,section.dark .card li{color:rgba(231,236,247,.75)}
+.card ul{margin:0;padding-left:20px}
+.card li b,.card li strong{color:var(--ink);font-weight:600}
+section.dark .card li b{color:#fff}
+
+/* ── Objetivos ── */
+.oa{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid rgba(27,48,104,.08);transition:padding-left .4s var(--spring)}
+.oa:hover{padding-left:6px}
+.oa:last-child{border-bottom:0}
+.oa .n{flex:0 0 44px;font-family:var(--f-m);font-size:12px;color:var(--navy);font-weight:500;padding-top:4px;letter-spacing:.02em}
+.oa .t{font-size:17px;color:var(--ink-2);line-height:1.5;letter-spacing:-.005em}
+.oa .t b{color:var(--ink);font-weight:600}
+
+/* ── Timeline Rail ── */
+.rail{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:34px;position:relative;overflow:hidden;
+  transition:box-shadow .5s var(--spring)}
+.rail::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(27,48,104,.04) 0%,transparent 50%);
+  opacity:0;transition:opacity .4s ease;pointer-events:none}
+.rail:hover::before{opacity:1}
+.rail:hover{box-shadow:0 20px 50px rgba(13,26,69,.08)}
+.rbar{display:flex;height:52px;border-radius:13px;overflow:hidden;margin-bottom:26px}
+.rseg{flex-grow:0;flex-basis:0;transition:flex-grow 1.5s var(--ease-out-expo);display:flex;align-items:center;justify-content:center;position:relative}
+.rail.in .rseg{flex-grow:var(--g)}
+.rseg span{font-family:var(--f-m);font-size:11px;color:rgba(255,255,255,.92);opacity:0;transition:opacity .5s 1s}
+.rail.in .rseg span{opacity:1}
+.rseg:hover{filter:brightness(1.1)}
+.rleg{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:18px}
+.rleg div .t{font-family:var(--f-m);font-size:11px;color:var(--ink-3)}
+.rleg div .n{font-family:var(--f-d);font-size:16px;font-weight:700;color:var(--night);margin-top:3px;letter-spacing:-.02em}
+.rleg div .d{font-size:13px;color:var(--ink-2);line-height:1.4;margin-top:2px}
+
+/* ── Modules Accordion (Apple: press-on-down, smooth expand) ── */
+.mod{background:var(--card);border:1px solid var(--line);border-radius:22px;margin-bottom:12px;overflow:hidden;
+  transition:border-color .35s ease,box-shadow .5s var(--spring)}
+.mod:hover{border-color:rgba(27,48,104,.18)}
+.mod.open{border-color:rgba(27,48,104,.28);box-shadow:0 16px 48px rgba(13,26,69,.09)}
+.mod-h{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;width:100%;padding:26px 30px;
+  background:none;border:0;cursor:pointer;text-align:left;font:inherit;color:inherit;
+  -webkit-tap-highlight-color:transparent;transition:background .3s ease}
+.mod-h:hover{background:rgba(27,48,104,.02)}
+.mod-h:active{background:rgba(27,48,104,.04)}
+.mod-h:focus-visible{outline:3px solid var(--navy);outline-offset:-4px;border-radius:22px}
+.mod-i{width:36px;height:36px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center;
+  font-family:var(--f-m);font-size:13px;font-weight:500;transition:all .5s var(--spring)}
+.mod.open .mod-i{background:var(--night);transform:scale(1.05)}
+.mod-h h3{font-size:21px;letter-spacing:-.02em}
+.mod-h .meta{display:block;font-size:13px;color:var(--ink-3);margin-top:5px;font-family:var(--f-m);letter-spacing:.01em}
+.plus{width:28px;height:28px;border-radius:50%;background:var(--bg-alt);display:grid;place-items:center;
+  position:relative;flex:0 0 28px;transition:background .4s var(--spring),transform .5s var(--spring)}
+.mod:hover .plus{transform:scale(1.08)}
+.mod.open .plus{background:var(--accent-soft);transform:rotate(45deg)}
+.plus::before,.plus::after{content:"";position:absolute;background:var(--ink-2);border-radius:2px;transition:transform .5s var(--spring),background .4s}
+.plus::before{width:12px;height:1.8px} .plus::after{width:1.8px;height:12px}
+.mod.open .plus::before,.mod.open .plus::after{background:var(--navy)}
+.mod-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s var(--spring)}
+.mod.open .mod-b{grid-template-rows:1fr}
+.mod-b>div{overflow:hidden}
+.mod-in{padding:0 30px 30px 82px}
+.mod-in ul{margin:0;padding-left:20px}
+.mod-in li{margin-bottom:9px;font-size:16px;color:var(--ink-2);line-height:1.5}
+.mod-in li b{color:var(--ink);font-weight:600}
+.lab{background:var(--bg-alt);border-left:3px solid var(--navy);border-radius:0 16px 16px 0;padding:20px 22px;margin-top:18px;font-size:15px;color:var(--ink-2);letter-spacing:-.005em}
+.lab b{display:block;font-family:var(--f-m);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--spark);margin-bottom:6px}
+pre{background:var(--dark-2);color:#C9D6F2;padding:20px 24px;border-radius:16px;overflow-x:auto;
+  font-family:var(--f-m);font-size:13px;line-height:1.8;margin:18px 0 0;letter-spacing:.01em}
+pre .c{color:#7FA3E8} pre .r{color:#8FB0F0}
+
+/* ── Grados de libertad ── */
+.gl{background:linear-gradient(150deg,#1B3068,#0D1A45);border-radius:18px;padding:30px;margin-top:20px;color:#C9D6F2}
+.gl-tabs{display:flex;gap:6px;background:rgba(255,255,255,.08);padding:4px;border-radius:100px;margin-bottom:24px;width:fit-content;max-width:100%;flex-wrap:wrap}
+.gl-tab{border:0;background:none;color:rgba(231,236,247,.68);font:inherit;font-size:14px;padding:8px 18px;border-radius:100px;
+  cursor:pointer;transition:all .4s var(--spring);-webkit-tap-highlight-color:transparent}
+.gl-tab:active{transform:scale(.94);transition:transform .1s ease-out}
+.gl-tab.on{background:#fff;color:var(--ink);font-weight:500;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.gl-p{display:none}
+.gl-p.on{display:block;animation:glin .55s var(--ease-out-expo)}
+@keyframes glin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.gl-p h4{font-size:19px;color:#fff;margin-bottom:8px}
+.gl-p p{color:rgba(231,236,247,.75);font-size:16px}
+.gl-p .ex{font-family:var(--f-m);font-size:13px;background:rgba(255,255,255,.06);border-left:2px solid #7FA3E8;
+  border-radius:0 11px 11px 0;padding:14px 16px;color:#C9D6F2;letter-spacing:0;margin-top:12px}
+
+/* ── Table ── */
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid rgba(27,48,104,.1);border-radius:20px;overflow:hidden;font-size:16px}
+th,td{text-align:left;padding:16px 22px;border-bottom:1px solid rgba(27,48,104,.07);vertical-align:top;color:var(--ink-2);letter-spacing:-.005em}
+th{background:var(--navy);font-family:var(--f-m);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#fff;font-weight:500}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:background .3s ease}
+tbody tr:hover{background:rgba(27,48,104,.03)}
+td.k{color:var(--ink);font-weight:600}
+
+/* ── Pills (Apple: subtle lift + press) ── */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pill{font-size:14px;padding:8px 16px;border-radius:100px;background:var(--card);color:var(--ink-2);
+  border:1px solid var(--line);transition:all .4s var(--spring);-webkit-tap-highlight-color:transparent}
+.pill:hover{transform:translateY(-2px);border-color:var(--navy);color:var(--navy)}
+.pill:active{transform:scale(.96);transition:transform .1s ease-out}
+section.dark .pill{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:rgba(231,236,247,.78)}
+.pill.acc{border-color:var(--spark);color:var(--spark)}
+
+/* ── KPI (Apple: layered shadows, press) ── */
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:32px;text-align:center;
+  transition:transform .5s var(--spring),box-shadow .5s var(--spring),border-color .35s ease;
+  position:relative;overflow:hidden;will-change:transform}
+.kpi::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(27,48,104,.05) 0%,transparent 55%);
+  opacity:0;transition:opacity .4s ease;pointer-events:none}
+.kpi:hover::before{opacity:1}
+.kpi:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(13,26,69,.08),0 6px 16px rgba(13,26,69,.04);border-color:rgba(27,48,104,.18)}
+.kpi:active{transform:translateY(-1px) scale(.985);transition:transform .12s ease-out}
+.kpi .num{font-family:var(--f-d);font-size:56px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--navy)}
+.kpi .num small{font-size:26px;color:var(--spark);font-weight:600}
+.kpi .lb{font-size:15px;color:var(--ink-2);margin-top:12px;line-height:1.42;letter-spacing:-.005em}
+.kpi .cut{font-family:var(--f-m);font-size:11px;color:var(--ink-3);margin-top:10px;letter-spacing:.02em}
+
+/* ── Footer ── */
+footer{background:linear-gradient(160deg,#1B3068,#0D1A45);padding:48px 22px;font-size:13px;color:rgba(231,236,247,.7);
+  border-top:3px solid var(--spark);position:relative;letter-spacing:.005em}
+.fin{max-width:var(--w);margin:0 auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+/* ── Countdown ── */
+.countdown{display:flex;justify-content:center;align-items:flex-start;gap:12px;margin:44px auto 0;max-width:600px;
+  opacity:0;animation:springUp .9s var(--spring) .9s forwards;transform:translateY(16px)}
+.cd-unit{text-align:center;min-width:80px}
+.cd-num{font-family:var(--f-d);font-size:clamp(36px,5.5vw,54px);font-weight:800;letter-spacing:-.04em;color:#fff;
+  line-height:1.1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:16px 12px;display:block;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 4px 20px rgba(0,0,0,.15),0 0 0 .5px rgba(255,255,255,.06) inset;
+  transition:transform .4s var(--spring)}
+.cd-unit:hover .cd-num{transform:scale(1.04)}
+.cd-label{font-family:var(--f-m);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(231,236,247,.45);margin-top:8px}
+.cd-sep{font-family:var(--f-d);font-size:clamp(28px,4vw,42px);font-weight:800;color:rgba(255,255,255,.25);
+  line-height:1.1;padding-top:16px}
+
+/* ── Hero event info ── */
+.hero-event{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px 48px;margin:32px auto 0;max-width:800px;
+  opacity:0;animation:springUp .9s var(--spring) .95s forwards;transform:translateY(16px)}
+.hero-event-item{display:flex;align-items:center;gap:14px;color:rgba(231,236,247,.95)}
+.hero-event-item svg{flex:0 0 32px;color:#7FA3E8}
+.hero-event-item .ev-text{font-family:var(--f-d);font-size:clamp(26px,4vw,38px);font-weight:700;letter-spacing:-.03em;color:#fff}
+
+.hero-instructor{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:24px 40px;margin:36px auto 0;
+  padding:26px 34px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 8px 32px rgba(0,0,0,.12),0 0 0 .5px rgba(255,255,255,.06) inset;
+  max-width:700px;opacity:0;animation:springUp .9s var(--spring) 1.05s forwards;transform:translateY(16px)}
+.hero-instructor-info{text-align:center}
+.hero-instructor-name{font-family:var(--f-d);font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.hero-instructor-role{font-size:15px;color:rgba(231,236,247,.6);margin-top:4px}
+.hero-instructor-email{font-size:15px;color:#8FB0F0;margin-top:6px}
+.hero-instructor-email a{color:#8FB0F0;transition:color .2s}
+.hero-instructor-email a:hover{color:#fff}
+
+.hero-powered{display:flex;align-items:center;justify-content:center;gap:14px;margin:36px auto 0;
+  opacity:0;animation:springUp .9s var(--spring) 1.15s forwards;transform:translateY(16px)}
+.hero-powered span{font-size:13px;color:rgba(231,236,247,.5);letter-spacing:.06em;text-transform:uppercase;font-family:var(--f-m)}
+.hero-powered img{height:44px;opacity:.85;transition:opacity .3s;filter:brightness(0) invert(1)}
+.hero-powered:hover img{opacity:1}
+
+.hero-brand img{transition:opacity .3s}
+.hero-brand .logo-white{filter:brightness(0) invert(1)}
+
+.footer-powered{display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(231,236,247,.5)}
+.footer-powered img{height:32px;opacity:.8;filter:brightness(0) invert(1)}
+
+/* ── Responsive ── */
+@media (max-width:860px){
+  .grid2{grid-template-columns:1fr}
+  .mod-in{padding-left:30px}
+  section{padding:76px 20px}
+  .hero{padding-top:64px}
+  .stats{flex-wrap:wrap;gap:22px 0}
+  .stat{flex:0 0 50%}
+  .stat+.stat::before{display:none}
+  .hero-brand{gap:10px}
+  .countdown{gap:8px}
+  .cd-unit{min-width:60px}
+  .cd-num{padding:12px 8px}
+  .cd-sep{padding-top:12px}
+  .hero-event{gap:12px 24px}
+  .hero-instructor{padding:20px;max-width:100%}
+  .footer-powered{justify-content:flex-end}
+}
+@media (max-width:480px){
+  .hero{padding-top:48px}
+  .hero-brand{flex-wrap:wrap;justify-content:center;gap:8px}
+  .countdown{gap:6px}
+  .cd-unit{min-width:52px}
+  .cd-num{padding:10px 6px;border-radius:10px}
+  .cd-sep{font-size:22px;padding-top:10px}
+  .hero-event{flex-direction:column;gap:10px}
+  .hero-instructor{padding:16px}
+  .hero-powered{flex-direction:column;gap:8px}
+  .fin{flex-direction:column;gap:24px}
+  .fin>div:last-child{text-align:left}
+  .footer-powered{justify-content:flex-start}
+}
+
+/* ── Reduced Motion (Apple: cross-fade, no springs/slides) ── */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.25s!important;
+    transition-timing-function:ease!important}
+  .rv{opacity:1;transform:none}
+  .rv.in{transition:opacity .25s ease!important}
+  .card:hover,.kpi:hover{transform:none!important}
+  .card:active,.kpi:active,.pill:active,.nav a:active,.gl-tab:active{transform:none!important}
+  .kicker,.hero h1 .word,.hero h1 .g,.hero-sub,.hero-brand,.stats,.term-wrap,
+  .countdown,.hero-event,.hero-instructor,.hero-powered{opacity:1;transform:none}
+  .hero-glow,.particles{display:none}
+  .cd-unit:hover .cd-num{transform:none!important}
+  .term-device{transition:none!important}
+}
+@media print{
+  .nav,#prog,.particles,.hero-glow,.countdown{display:none}
+  .hero,section.dark,footer{background:#fff!important;color:#000!important}
+  section.dark h2,section.dark h3,.hero h1{color:#0D1A45!important}
+  section{padding:26px 0;break-inside:avoid}
+  .mod-b{grid-template-rows:1fr!important}
+  .rv,.countdown,.hero-event,.hero-instructor,.hero-powered,.hero-brand{opacity:1!important;transform:none!important}
+  .logo-white,.footer-powered img,.hero-powered img{filter:none!important}
+  .hero-event-item .ev-text{color:#0D1A45!important}
+  .hero-instructor-name{color:#0D1A45!important}
+  .cd-sep{animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<nav class="nav" id="mainNav">
+  <a href="#porque">Por qué</a>
+  <a href="#quien">Para quién</a>
+  <a href="#objetivos">Objetivos</a>
+  <a href="#ruta">Ruta</a>
+  <a href="#temario">Temario</a>
+  <a href="#reto">Reto</a>
+  <a href="#ambiente">Ambiente</a>
+  <a href="#evaluacion">Evaluación</a>
+  <a href="#facilitacion">Facilitación</a>
+  <a href="#riesgos">Riesgos</a>
+  <a href="#exito">Éxito</a>
+  <a href="#fuentes">Fuentes</a>
+  <a href="#siguiente">Siguiente</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<header class="hero">
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
+  <div class="hero-glow hero-glow-3"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="hero-in">
+    <div class="hero-brand">
+      <img src="MITC blanco.png" alt="Monterrey IT Cluster" style="height:clamp(60px,12vw,90px)">
+      <span style="font-size:clamp(22px,3vw,30px);color:rgba(231,236,247,.35);font-weight:300">+</span>
+      <img src="logo30color.png" alt="OmniSys 30 años" class="logo-white" style="height:clamp(140px,26vw,200px)">
+    </div>
+    <div class="kicker">Taller práctico · 3 horas</div>
+    <h1>
+      <span class="word" style="animation-delay:.3s">Skills</span>
+      <span class="word" style="animation-delay:.38s">con</span>
+      <span class="word g" style="animation-delay:.5s">Claude&nbsp;Code</span>
+    </h1>
+    <p class="hero-sub">Deja de repetir el mismo prompt. Enséñaselo una vez.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="v" data-to="180">0</div><div class="l">minutos</div></div>
+      <div class="stat"><div class="v" data-to="6">0</div><div class="l">módulos</div></div>
+      <div class="stat"><div class="v" data-to="92">0</div><div class="l">min de teclado</div></div>
+      <div class="stat"><div class="v" data-to="1">0</div><div class="l">skill propia al salir</div></div>
+    </div>
+
+    <div class="countdown" id="countdown">
+      <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><div class="cd-label">Días</div></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-hours">--</span><div class="cd-label">Horas</div></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-mins">--</span><div class="cd-label">Min</div></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-secs">--</span><div class="cd-label">Seg</div></div>
+    </div>
+
+    <div class="hero-event">
+      <div class="hero-event-item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="ev-text">30 de septiembre</span>
+      </div>
+      <div class="hero-event-item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="ev-text">9:00 AM</span>
+      </div>
+    </div>
+
+    <div class="hero-instructor">
+      <div class="hero-instructor-info">
+        <div class="hero-instructor-name">Erick Vázquez</div>
+        <div class="hero-instructor-role">Director de Innovación y Delivery</div>
+        <div class="hero-instructor-email"><a href="mailto:erick.vazquez@omnisysmx.com">erick.vazquez@omnisysmx.com</a></div>
+      </div>
+    </div>
+
+    <div class="hero-powered">
+      <span>Impulsado por</span>
+      <img src="MITC blanco.png" alt="Monterrey IT Cluster">
+    </div>
+
+    <div class="term-wrap" id="termWrap">
+      <div class="term-device" id="termDevice">
+        <div class="term" aria-hidden="true">
+          <div class="tbar">
+            <span class="td" style="background:#FF5F57"></span>
+            <span class="td" style="background:#FEBC2E"></span>
+            <span class="td" style="background:#28C840"></span>
+            <span class="tname">~/.claude/skills/resumiendo-cambios/SKILL.md</span>
+          </div>
+          <div class="tbody" id="term"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ 01 POR QUÉ ══ -->
+<section id="porque">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">El problema</div>
+      <h2>Tu conocimiento vive en prompts que vuelves a escribir</h2>
+      <p>Cada vez explicas otra vez las convenciones del repo, el formato de los commits, qué revisar antes de abrir un PR. Una skill escribe eso una sola vez en un archivo que Claude Code lee automáticamente cuando la solicitud coincide.</p>
+    </div>
+    <div class="grid2">
+      <div class="card rv" data-glow><h3>Qué cambia en tu día</h3>
+        <ul>
+          <li>El contexto deja de ser algo que tecleas y pasa a ser algo que versionas.</li>
+          <li>El cuerpo de la skill solo cuesta tokens cuando se usa; el resto del tiempo es gratis.</li>
+          <li>Funciona igual el martes y el viernes, con o sin café.</li>
+          <li>Se clona con el repo: quien entra al proyecto hereda tu criterio.</li>
+        </ul>
+      </div>
+      <div class="card rv" data-d="1" data-glow><h3>Qué cambia en tu equipo</h3>
+        <ul>
+          <li>Las convenciones dejan de vivir en la cabeza de quien lleva más tiempo.</li>
+          <li>La revisión de código aplica el mismo criterio sin importar quién revise.</li>
+          <li>El onboarding se vuelve un <code>git clone</code>.</li>
+          <li>Una skill útil se comparte como se comparte una librería.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 PARA QUIÉN ══ -->
+<section id="quien" class="alt">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Para quién</div>
+      <h2>Desarrolladores que ya usan Claude Code y quieren exprimirlo</h2>
+      <p>No hace falta experiencia previa con skills. Sí hace falta un repositorio propio donde ensuciarse las manos.</p>
+    </div>
+    <div class="grid3">
+      <div class="card rv" data-glow><h3>Backend y frontend</h3><p>Convenciones de código, generación de boilerplate consistente y revisión de PR con el criterio del proyecto.</p></div>
+      <div class="card rv" data-d="1" data-glow><h3>Tech leads</h3><p>Criterio para repartir contexto entre skills, CLAUDE.md, subagentes, hooks y servidores MCP sin duplicarlo todo.</p></div>
+      <div class="card rv" data-d="2" data-glow><h3>Platform y DevOps</h3><p>Procedimientos frágiles convertidos en skills de baja libertad: despliegues, migraciones, runbooks ejecutables.</p></div>
+      <div class="card rv" data-glow><h3>Indies y freelancers</h3><p>Tu forma de trabajar codificada una vez y reutilizada en cada cliente, sin volver a explicarla.</p></div>
+      <div class="card rv" data-d="1" data-glow><h3>QA y testing</h3><p>Checklists de liberación y criterios de aceptación que se aplican igual en cada corrida.</p></div>
+      <div class="card rv" data-d="2" data-glow><h3>Quien mantiene un monorepo</h3><p>Skills anidadas por paquete, que se activan solo cuando Claude toca archivos de ese directorio.</p></div>
+    </div>
+    <div class="card rv" style="margin-top:24px" data-glow>
+      <h3>Lo que necesitas traer</h3>
+      <div class="pills">
+        <span class="pill">Claude Code instalado y con sesión iniciada</span>
+        <span class="pill">Terminal y Git de uso diario</span>
+        <span class="pill">Markdown y nociones de YAML</span>
+        <span class="pill">Un repositorio propio, tuyo, real</span>
+        <span class="pill acc">No necesitas: haber escrito una skill antes</span>
+      </div>
+      <p style="margin:18px 0 0;font-size:15px;color:var(--ink-3)">Se envía una guía de preparación 48 horas antes. Quien llegue sin ambiente listo trabaja en pareja: nadie se queda mirando la pantalla de otro sin escribir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 OBJETIVOS ══ -->
+<section id="objetivos">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Objetivos</div>
+      <h2>Al salir vas a poder hacer siete cosas</h2>
+      <p>Cada una se verifica con evidencia dentro del taller, no con una encuesta de satisfacción.</p>
+    </div>
+    <div class="card rv" style="padding:14px 32px" data-glow>
+      <div class="oa"><div class="n">OA-1</div><div class="t"><b>Explicar</b> qué son las skills, dónde residen y cómo Claude Code las relaciona con una solicitud.</div></div>
+      <div class="oa"><div class="n">OA-2</div><div class="t"><b>Crear</b> una skill desde cero con frontmatter válido en <code>SKILL.md</code> y verificar que carga.</div></div>
+      <div class="oa"><div class="n">OA-3</div><div class="t"><b>Redactar</b> nombres y descripciones que disparen la skill en el momento correcto: gerundio, tercera persona, qué hace más cuándo usarla; y acotar herramientas con <code>allowed-tools</code>.</div></div>
+      <div class="oa"><div class="n">OA-4</div><div class="t"><b>Organizar</b> skills grandes con revelación progresiva y grados de libertad ajustados a la fragilidad de la tarea.</div></div>
+      <div class="oa"><div class="n">OA-5</div><div class="t"><b>Elegir</b> entre skills, CLAUDE.md, subagentes, hooks y servidores MCP para un caso concreto.</div></div>
+      <div class="oa"><div class="n">OA-6</div><div class="t"><b>Compartir</b> skills por repositorio, plugins, configuración administrada y subagentes personalizados.</div></div>
+      <div class="oa"><div class="n">OA-7</div><div class="t"><b>Diagnosticar</b> fallas de activación, carga y prioridad con <code>/doctor</code> y <code>claude --debug</code>.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 RUTA ══ -->
+<section id="ruta" class="alt">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">La sesión</div>
+      <h2>Tres horas, y el reloj manda</h2>
+      <p>54 minutos de exposición, 92 de teclado, 10 de receso y 24 de apertura y cierre. Nadie escucha más de 10 minutos seguidos sin escribir algo.</p>
+    </div>
+    <div class="rail rv" id="rail" data-glow>
+      <div class="rbar">
+        <div class="rseg" style="--g:12;background:#1B3068"><span>12′</span></div>
+        <div class="rseg" style="--g:22;background:#3A5490"><span>22′</span></div>
+        <div class="rseg" style="--g:66;background:linear-gradient(135deg,#B5000C,#E00010)"><span>66′ · núcleo</span></div>
+        <div class="rseg" style="--g:10;background:#E4EAF4"></div>
+        <div class="rseg" style="--g:22;background:#3A5490"><span>22′</span></div>
+        <div class="rseg" style="--g:36;background:#1B3068"><span>36′</span></div>
+        <div class="rseg" style="--g:12;background:#8FA8CC"></div>
+      </div>
+      <div class="rleg">
+        <div><div class="t">00:00 · 12 min</div><div class="n">Apertura</div><div class="d">Demo de choque</div></div>
+        <div><div class="t">00:12 · 22 min</div><div class="n">Módulo 1</div><div class="d">Qué son y cómo se activan</div></div>
+        <div><div class="t">00:34 · 66 min</div><div class="n">Módulos 2–3</div><div class="d">Construcción y multiarchivo</div></div>
+        <div><div class="t">01:40 · 10 min</div><div class="n">Receso</div><div class="d">Único corte</div></div>
+        <div><div class="t">01:50 · 22 min</div><div class="n">Módulo 4</div><div class="d">Skills frente a otras capas</div></div>
+        <div><div class="t">02:12 · 36 min</div><div class="n">Módulos 5–6</div><div class="d">Compartir y diagnosticar</div></div>
+        <div><div class="t">02:48 · 12 min</div><div class="n">Cierre</div><div class="d">Compromisos y siguiente paso</div></div>
+      </div>
+    </div>
+    <div class="card rv" data-d="1" style="margin-top:20px" data-glow>
+      <h3>La apertura no lleva diapositivas</h3>
+      <p style="margin:0">Se le pide a alguien del grupo un procedimiento que repita cada semana, se escribe en vivo como skill en menos de tres minutos y se invoca. La promesa del taller queda demostrada antes de enunciarla.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 05 TEMARIO ══ -->
+<section id="temario">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Temario</div>
+      <h2>Seis módulos que cargan bajo demanda</h2>
+      <p>Como una skill: arriba solo los metadatos, el cuerpo se carga cuando lo invocas. Toca uno para abrirlo.</p>
+    </div>
+    <div id="mods">
+      <article class="mod rv">
+        <button class="mod-h" aria-expanded="false">
+          <span class="mod-i">01</span>
+          <span><h3>¿Qué son las skills?</h3><span class="meta">22 min · 10 exposición / 12 práctica</span></span>
+          <span class="plus"></span>
+        </button>
+        <div class="mod-b"><div><div class="mod-in">
+          <ul>
+            <li>Anatomía: carpeta, <code>SKILL.md</code>, frontmatter y cuerpo markdown.</li>
+            <li>Los cuatro niveles donde vive: empresarial, personal, proyecto y plugin. Cómo se resuelve un conflicto de nombres.</li>
+            <li>Dos formas de activarse: invocación directa con <code>/nombre-skill</code> o carga automática cuando la descripción coincide.</li>
+            <li>Ciclo de vida del contexto: la descripción vive siempre cargada, el cuerpo solo cuando se invoca.</li>
+            <li>Skills anidadas en monorepo: se activan cuando Claude toca archivos de ese subdirectorio.</li>
+          </ul>
+          <div class="lab"><b>Laboratorio 1 · 12 min</b>Inventario en vivo: pregúntale a Claude qué skills tiene disponibles, abre <code>/skills</code> y localiza el origen de cada una.</div>
+        </div></div></div>
+      </article>
+      <article class="mod rv" data-d="1">
+        <button class="mod-h" aria-expanded="false">
+          <span class="mod-i">02</span>
+          <span><h3>Tu primera skill</h3><span class="meta">38 min · 8 exposición / 30 práctica · núcleo</span></span>
+          <span class="plus"></span>
+        </button>
+        <div class="mod-b"><div><div class="mod-in">
+          <ul>
+            <li>Crear el directorio y escribir el <code>SKILL.md</code> mínimo viable.</li>
+            <li>Nombre en gerundio, que describe la actividad: <code>revisando-prs</code>, <code>generando-migraciones</code>. Nunca <code>helper</code> ni <code>utils</code>. Solo minúsculas, números y guiones; máximo 64 caracteres; sin las palabras reservadas <i>anthropic</i> y <i>claude</i>.</li>
+            <li><b>La descripción es el interruptor.</b> Fórmula obligatoria: qué hace más cuándo usarla, con el caso principal al inicio, en tercera persona y con los términos que la gente escribe de verdad. Máximo 1,024 caracteres.</li>
+            <li>Se escribe "Analiza diffs y genera mensajes de commit", no "Te puedo ayudar con los commits". La descripción se inyecta en la indicación del sistema y el cambio de persona rompe el descubrimiento.</li>
+            <li>Detección de cambios en vivo: editas el archivo y la sesión lo toma sin reiniciar.</li>
+            <li>Inyección de contexto dinámico con <code>!`comando`</code>: la instrucción llega con el <code>git diff</code> ya adentro.</li>
+          </ul>
+          <pre><span class="c">---</span>
+name: resumiendo-cambios
+description: Resume los cambios sin commitear y señala lo
+  riesgoso. Úsala cuando el usuario pregunte qué cambió,
+  pida un mensaje de commit o quiera revisar su diff.
+allowed-tools: Read Grep
+<span class="c">---</span>
+
+<span class="r">## Cambios actuales</span>
+!`git diff HEAD`
+
+<span class="r">## Instrucciones</span>
+Resume en dos o tres viñetas, luego lista riesgos:
+manejo de errores ausente, valores hardcodeados,
+pruebas que quedaron desactualizadas.</pre>
+          <div class="lab"><b>Laboratorio 2 · 30 min</b>Cada quien construye una skill real de su propio repo con el método Claude A / Claude B, y la dispara dos veces: escribiéndola con <code>/</code> y pidiéndola en lenguaje natural.</div>
+        </div></div></div>
+      </article>
+      <article class="mod rv" data-d="2">
+        <button class="mod-h" aria-expanded="false">
+          <span class="mod-i">03</span>
+          <span><h3>Configuración, grados de libertad y multiarchivo</h3><span class="meta">28 min · 10 exposición / 18 práctica</span></span>
+          <span class="plus"></span>
+        </button>
+        <div class="mod-b"><div><div class="mod-in">
+          <ul>
+            <li>Concisión: la ventana de contexto es un bien común. Solo agregas lo que Claude no sabe ya; <code>SKILL.md</code> por debajo de 500 líneas.</li>
+            <li>Los cuatro campos que se usan de verdad: <code>description</code>, <code>allowed-tools</code>, <code>disable-model-invocation</code> y <code>user-invocable</code>.</li>
+            <li><code>allowed-tools</code> preaprueba herramientas durante el turno que invoca la skill; no restringe. Para restringir van reglas de permisos.</li>
+            <li>Revelación progresiva: <code>reference.md</code> y <code>examples.md</code> cargan solo cuando hacen falta; <code>scripts/</code> se ejecuta, no se lee. Referencias a un solo nivel, nunca encadenadas.</li>
+          </ul>
+          <div class="gl">
+            <div class="gl-tabs">
+              <button class="gl-tab on" data-gl="0">Alta libertad</button>
+              <button class="gl-tab" data-gl="1">Media</button>
+              <button class="gl-tab" data-gl="2">Baja libertad</button>
+            </div>
+            <div class="gl-p on" data-p="0">
+              <h4>Campo abierto sin peligros</h4>
+              <p>Varios caminos llegan al resultado. Das dirección general y confías en el criterio del modelo. Instrucciones en prosa, sin scripts.</p>
+              <div class="ex">Revisión de código: analiza estructura, detecta casos borde, sugiere mejoras de legibilidad.</div>
+            </div>
+            <div class="gl-p" data-p="1">
+              <h4>Hay un patrón preferido</h4>
+              <p>Existe una forma recomendada pero la variación es aceptable. Entregas una plantilla o un script con parámetros.</p>
+              <div class="ex">generar_reporte(datos, formato="markdown", incluir_graficas=True)</div>
+            </div>
+            <div class="gl-p" data-p="2">
+              <h4>Puente angosto con precipicios</h4>
+              <p>La operación es frágil y la secuencia importa. Se ejecuta un comando exacto y no se agregan banderas.</p>
+              <div class="ex">python scripts/migrate.py --verify --backup<br><span style="color:#FF6A70">No modifiques el comando ni agregues banderas.</span></div>
+            </div>
+          </div>
+          <div class="lab"><b>Laboratorio 3 · 18 min</b>Parte la skill del módulo 2 en tres archivos, con las referencias a un nivel, y ejecuta un script incluido sin que salte la solicitud de permiso.</div>
+        </div></div></div>
+      </article>
+      <article class="mod rv">
+        <button class="mod-h" aria-expanded="false">
+          <span class="mod-i">04</span>
+          <span><h3>Skills frente a las otras capas</h3><span class="meta">22 min · 12 exposición / 10 discusión</span></span>
+          <span class="plus"></span>
+        </button>
+        <div class="mod-b"><div><div class="mod-in">
+          <ul>
+            <li>Árbol de decisión por naturaleza del contenido: hecho permanente, procedimiento, tarea aislada, regla determinista o acceso a sistema externo.</li>
+            <li><code>context: fork</code> ejecuta la skill como subagente con su propio contexto. Advertencia: una skill de solo lineamientos ejecutada como fork devuelve poco, porque el subagente recibe guías sin tarea.</li>
+          </ul>
+          <table style="margin-top:18px">
+            <thead><tr><th style="width:26%">Capa</th><th>Úsala cuando</th></tr></thead>
+            <tbody>
+              <tr><td class="k">CLAUDE.md</td><td>Es un hecho estable del proyecto que conviene tener siempre en contexto.</td></tr>
+              <tr><td class="k">Skill</td><td>Es un procedimiento o referencia que solo debe costar contexto al usarse.</td></tr>
+              <tr><td class="k">Subagente</td><td>La tarea necesita contexto aislado y un rol con herramientas propias.</td></tr>
+              <tr><td class="k">Hook</td><td>El comportamiento debe cumplirse siempre, sin depender del criterio del modelo.</td></tr>
+              <tr><td class="k">Servidor MCP</td><td>Hace falta conectarse a un sistema externo: GitHub, Jira, una base de datos.</td></tr>
+            </tbody>
+          </table>
+          <div class="lab"><b>Laboratorio 4 · 10 min</b>Tres casos en tarjetas: "el equipo siempre olvida correr el linter", "necesito el esquema de la base al analizar queries", "quiero un análisis de dependencias sin ensuciar mi contexto". Cada mesa asigna capa y la defiende en 60 segundos.</div>
+        </div></div></div>
+      </article>
+      <article class="mod rv" data-d="1">
+        <button class="mod-h" aria-expanded="false">
+          <span class="mod-i">05</span>
+          <span><h3>Compartir skills</h3><span class="meta">18 min · 8 exposición / 10 práctica</span></span>
+          <span class="plus"></span>
+        </button>
+        <div class="mod-b"><div><div class="mod-in">
+          <ul>
+            <li>Por repositorio: versionar <code>.claude/skills/</code> y que la skill llegue con el <code>git clone</code>. Es la vía que se practica hoy.</li>
+            <li>Panorama de las otras tres: plugin, configuración administrada y subagentes que precargan skills. Se explican, no se ejecutan en aula.</li>
+            <li>Portabilidad: fuera de Claude Code solo aplican los seis campos del estándar abierto Agent Skills.</li>
+            <li>Seguridad: revisa el <code>allowed-tools</code> de cualquier skill que llegue en un repo ajeno antes de correrla. Una skill puede concederse acceso amplio a herramientas.</li>
+          </ul>
+          <div class="lab"><b>Laboratorio 5 · 10 min</b>Publica tu skill en el repositorio compartido del taller y clona la de otra persona. La ejecutas sin que te expliquen nada y le reportas qué no se entendió.</div>
+        </div></div></div>
+      </article>
+      <article class="mod rv" data-d="2">
+        <button class="mod-h" aria-expanded="false">
+          <span class="mod-i">06</span>
+          <span><h3>Cuando la skill no funciona</h3><span class="meta">18 min · 6 exposición / 12 práctica</span></span>
+          <span class="plus"></span>
+        </button>
+        <div class="mod-b"><div><div class="mod-in">
+          <ul>
+            <li>No se activa: la descripción no tiene las palabras que escribes de verdad, o está en primera o segunda persona. Es la causa número uno.</li>
+            <li>Se activa de más: descripción demasiado amplia, o falta <code>disable-model-invocation</code>.</li>
+            <li>Frontmatter mal formado: la skill carga sin metadatos, responde a <code>/nombre</code> pero nunca se dispara sola.</li>
+            <li>Antipatrones que rompen skills en silencio: rutas con barra invertida, ofrecer cinco librerías en vez de una con salida alternativa, referencias anidadas en cadena, información con fecha de caducidad y terminología que cambia a media skill.</li>
+            <li>Diagnóstico: <code>/doctor</code>, <code>/context</code>, <code>/skills</code> y <code>claude --debug</code>.</li>
+          </ul>
+          <div class="lab"><b>Laboratorio 6 · 12 min</b>Skill saboteada: cada mesa recibe una con tres fallas sembradas y la deja funcionando contra reloj.</div>
+        </div></div></div>
+      </article>
+    </div>
+    <div class="card rv" style="margin-top:24px" data-glow>
+      <h3>Lo que no cabe en tres horas</h3>
+      <p>No se elimina: va en el repositorio del taller como material de referencia, con la misma revelación progresiva que enseña el módulo 3.</p>
+      <div class="pills">
+        <span class="pill">Referencia completa de frontmatter</span>
+        <span class="pill">Argumentos <code>$ARGUMENTS</code></span>
+        <span class="pill">Skills empaquetadas <code>/run</code> y <code>/verify</code></span>
+        <span class="pill">Plugins y marketplaces</span>
+        <span class="pill">Conflictos de prioridad</span>
+        <span class="pill">Presupuesto del listado</span>
+        <span class="pill">Evaluación con <code>skill-creator</code></span>
+        <span class="pill">Planificar–validar–ejecutar</span>
+        <span class="pill">Scripts que resuelven, no delegan</span>
+        <span class="pill">Nombres calificados de herramientas MCP</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 06 RETO ══ -->
+<section id="reto" class="dark">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">El reto</div>
+      <h2>Sales con una skill, no con un certificado</h2>
+      <p>Nace en el laboratorio 2, se parte en el 3 y se publica en el 5. El taller no termina con un examen; termina con algo que usas mañana.</p>
+    </div>
+    <div class="grid2">
+      <div class="card rv" data-glow><h3>Ideas si no traes una</h3>
+        <ul>
+          <li>Revisor de PR contra las convenciones de tu repo.</li>
+          <li>Generador de mensajes de commit con tu formato.</li>
+          <li>Checklist de liberación con criterios de aceptación versionados.</li>
+          <li>Contexto de un sistema legado que nadie quiere volver a explicar.</li>
+          <li>Andamiaje de un módulo nuevo siguiendo la estructura del proyecto.</li>
+        </ul>
+      </div>
+      <div class="card rv" data-d="1" data-glow><h3>Criterios de aceptación</h3>
+        <p style="font-size:14px;color:var(--ink-3);margin-bottom:12px">Derivados de la lista de verificación oficial de Anthropic.</p>
+        <ul>
+          <li>Descripción específica, en tercera persona, con qué hace y cuándo usarla.</li>
+          <li>Se dispara sola con una petición en lenguaje natural.</li>
+          <li><code>SKILL.md</code> bajo 500 líneas, detalle en archivos a un nivel.</li>
+          <li>Terminología consistente y sin información con caducidad.</li>
+          <li>Tres evaluaciones escritas y corridas contra la línea base.</li>
+          <li>Versionada y ejecutada por otra persona sin explicación previa.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card rv" data-d="2" style="margin-top:20px" data-glow>
+      <h3>Las evaluaciones van antes que la documentación</h3>
+      <p style="margin:0">La guía oficial invierte el orden habitual: primero corres la tarea sin skill y documentas dónde falla, luego construyes tres escenarios que prueben esas fallas, mides la línea base y solo entonces escribes el contenido mínimo que las pasa. Es lo que evita skills que resuelven problemas imaginarios. En el taller se hace la versión corta: anotas una falla concreta antes de abrir el editor.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 07 AMBIENTE ══ -->
+<section id="ambiente">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Logística</div>
+      <h2>Qué se necesita para que la sesión corra</h2>
+    </div>
+    <div class="rv">
+      <table>
+        <thead><tr><th style="width:26%">Elemento</th><th>Requisito</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Tu equipo</td><td>Laptop propia con Claude Code funcionando y sesión iniciada. Guía de preparación 48 h antes y ventana de soporte la víspera.</td></tr>
+          <tr><td class="k">Tu repositorio</td><td>Un repo real donde puedas escribir. Hay un sandbox del taller para quien prefiera no tocar código propio.</td></tr>
+          <tr><td class="k">Red</td><td>Salida a internet sin proxy que bloquee la sesión. Se valida la víspera, no el día.</td></tr>
+          <tr><td class="k">Sala</td><td>Mesas para trabajo en pareja, proyector y una pantalla secundaria para la terminal del instructor. En remoto: cámaras opcionales, terminal compartida obligatoria.</td></tr>
+          <tr><td class="k">Repositorio del taller</td><td>Skills de ejemplo, plantillas, casos de laboratorio, la skill saboteada del módulo 6 y una carpeta donde el grupo publica lo que construye.</td></tr>
+          <tr><td class="k">Respaldo</td><td>Grabación de las demos por si falla la conectividad. Ningún módulo depende de una demo irreproducible.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 08 EVALUACIÓN ══ -->
+<section id="evaluacion" class="alt">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Evaluación</div>
+      <h2>Evidencias, no percepciones</h2>
+    </div>
+    <div class="rv">
+      <table>
+        <thead><tr><th style="width:20%">Momento</th><th style="width:28%">Instrumento</th><th>Evidencia esperada</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Diagnóstico</td><td>Falla documentada sin skill</td><td>Cada quien nombra una tarea donde Claude le falla hoy. Es la línea base contra la que se medirá su skill.</td></tr>
+          <tr><td class="k">Formativa</td><td>Laboratorios 1 a 6</td><td>Skill que carga, se dispara y produce el resultado esperado.</td></tr>
+          <tr><td class="k">Sumativa</td><td>Reto contra la lista de verificación</td><td>Skill publicada que cumple los seis criterios de aceptación.</td></tr>
+          <tr><td class="k">Robustez</td><td>Prueba multimodelo</td><td>Se corre con Haiku, Sonnet y Opus. Lo que basta para Opus puede quedarse corto para Haiku.</td></tr>
+          <tr><td class="k">Transferencia</td><td>Seguimiento a 30 días</td><td>La skill sigue en uso y tuvo una iteración del ciclo observar–refinar–probar.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 09 FACILITACIÓN ══ -->
+<section id="facilitacion">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Facilitación</div>
+      <h2>Notas para conducir la sesión</h2>
+      <p>El contenido está resuelto. Lo que define el resultado es el manejo del aula.</p>
+    </div>
+    <div class="card rv" style="margin-bottom:20px" data-glow>
+      <h3>El método del laboratorio 2: Claude A y Claude B</h3>
+      <p>Es lo que hace viable construir una skill real en 30 minutos. Nadie escribe el <code>SKILL.md</code> a mano desde cero.</p>
+      <ul>
+        <li><b>Claude A</b> es la sesión donde resuelves una tarea con prompting normal y observas qué contexto tuviste que dar. Al final le pides: "crea una skill que capture este patrón".</li>
+        <li>Revisas concisión sobre lo generado: "quita la explicación de qué es un PR, eso ya lo sabes".</li>
+        <li><b>Claude B</b> es una sesión nueva con la skill cargada. Ahí la pruebas en una tarea parecida y observas dónde tropieza.</li>
+        <li>Lo observado en B regresa a A con el detalle exacto: "olvidó revisar el manejo de errores, ¿la regla no está lo bastante visible?".</li>
+      </ul>
+      <p style="margin:14px 0 0;font-size:15px;color:var(--ink-3)">Se demuestra en la apertura y se repite en los laboratorios 2, 3 y 6. Es el único hábito que debe salir instalado del taller.</p>
+    </div>
+    <div class="grid2">
+      <div class="card rv" data-d="1" data-glow><h3>Ritmo</h3>
+        <ul>
+          <li>Nunca más de 10 minutos sin que alguien escriba código.</li>
+          <li>Cronómetro visible por módulo. En 3 horas manda el reloj, no el entusiasmo del instructor.</li>
+          <li>Terminal en pantalla grande, tipografía a 18 pt o más. Lo que no se lee, no se aprende.</li>
+          <li>Los errores en vivo se depuran frente al grupo: es el módulo 6 anticipado.</li>
+        </ul>
+      </div>
+      <div class="card rv" data-d="2" data-glow><h3>Objeciones que van a salir</h3>
+        <ul>
+          <li><i>"Es lo mismo que un prompt guardado."</i> No: se dispara sola y solo cuesta contexto al usarse.</li>
+          <li><i>"Ya tengo un CLAUDE.md enorme."</i> Exacto, y por eso creció de más. El módulo 4 separa qué va en cada capa.</li>
+          <li><i>"No tengo tiempo de escribir skills."</i> La primera toma tres minutos. Se demuestra en la apertura.</li>
+          <li><i>"¿Esto funciona fuera de Claude Code?"</i> El núcleo sí, es un estándar abierto. Módulo 5.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 10 RIESGOS ══ -->
+<section id="riesgos" class="alt">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Riesgos</div>
+      <h2>Qué puede salir mal</h2>
+    </div>
+    <div class="rv">
+      <table>
+        <thead><tr><th style="width:30%">Riesgo</th><th style="width:14%">Impacto</th><th>Mitigación</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Ambientes heterogéneos</td><td>Alto</td><td>Grupo abierto significa macOS, Linux y Windows en la misma sala. Guía por sistema operativo 48 h antes, soporte la víspera y trabajo en pareja como plan B.</td></tr>
+          <tr><td class="k">Niveles muy dispares</td><td>Alto</td><td>Sin contexto corporativo común, la brecha es mayor. Laboratorios con reto opcional, parejas mixtas deliberadas y ejemplos que no asumen ningún stack.</td></tr>
+          <tr><td class="k">Repos privados o restringidos</td><td>Medio</td><td>Sandbox del taller disponible desde el minuto cero para quien no pueda usar código de su trabajo.</td></tr>
+          <tr><td class="k">Se agota el tiempo</td><td>Alto</td><td>Con 3 horas no hay holgura. El módulo 4 se recorta primero a 12 min con solo la tabla; los laboratorios 2 y 3 no se tocan nunca.</td></tr>
+          <tr><td class="k">Cambios de versión del producto</td><td>Medio</td><td>Revisión del temario contra la documentación oficial dentro de los 7 días previos.</td></tr>
+          <tr><td class="k">Nadie aplica lo aprendido</td><td>Alto</td><td>El reto produce un activo real, se publica en el repo del grupo y hay seguimiento a 30 días.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 11 ÉXITO ══ -->
+<section id="exito">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Éxito</div>
+      <h2>Cómo sabemos que funcionó</h2>
+    </div>
+    <div class="grid3">
+      <div class="kpi rv" data-glow><div class="num" data-to="90">0<small>%</small></div><div class="lb">Sale del taller con una skill funcionando</div><div class="cut">Cierre de la sesión</div></div>
+      <div class="kpi rv" data-d="1" data-glow><div class="num" data-to="70">0<small>%</small></div><div class="lb">Publica su skill en el repo del grupo</div><div class="cut">7 días</div></div>
+      <div class="kpi rv" data-d="2" data-glow><div class="num" data-to="60">0<small>%</small></div><div class="lb">Sigue usando su skill</div><div class="cut">30 días</div></div>
+      <div class="kpi rv" data-d="3" data-glow><div class="num" data-to="5">0</div><div class="lb">Skills del grupo adoptadas por alguien más</div><div class="cut">30 días</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 12 FUENTES ══ -->
+<section id="fuentes">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Fuentes</div>
+      <h2>Documentación de respaldo</h2>
+      <p>El contenido técnico se valida contra documentación oficial antes de cada impartición.</p>
+    </div>
+    <div class="card rv" data-glow>
+      <ul>
+        <li><a href="https://platform.claude.com/docs/es/agents-and-tools/agent-skills/best-practices">Mejores prácticas para la creación de Skills</a> — nomenclatura, descripciones, grados de libertad, evaluaciones y lista de verificación. Base de los módulos 2, 3 y 6.</li>
+        <li><a href="https://code.claude.com/docs/en/skills">Extend Claude with skills</a> — referencia canónica de <code>SKILL.md</code>, frontmatter, ubicaciones y carga.</li>
+        <li><a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Agent Skills overview</a> — arquitectura y revelación progresiva.</li>
+        <li><a href="https://agentskills.io">agentskills.io</a> — estándar abierto y evaluación de skills.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 13 SIGUIENTES PASOS ══ -->
+<section id="siguiente" class="alt">
+  <div class="wrap">
+    <div class="shead rv">
+      <div class="eyebrow">Siguiente paso</div>
+      <h2>Esto es el brief. Falta producir el contenido</h2>
+      <p>Este documento fija alcance, tiempos, objetivos y criterios. Con eso aprobado, se produce el material en este orden.</p>
+    </div>
+    <div class="grid3">
+      <div class="card rv" data-glow><h3>1 · Guion del facilitador</h3><p>Minuto a minuto de los 180, con frases de cierre por módulo, preguntas para el parking y los tiempos exactos de cada laboratorio.</p></div>
+      <div class="card rv" data-d="1" data-glow><h3>2 · Repositorio del taller</h3><p>Skills de ejemplo, plantillas de <code>SKILL.md</code>, los seis casos de laboratorio, la skill saboteada y la carpeta donde el grupo publica.</p></div>
+      <div class="card rv" data-d="2" data-glow><h3>3 · Soporte visual</h3><p>Deck mínimo para los bloques de exposición. Nunca compite con la terminal: la pantalla principal es siempre el código.</p></div>
+      <div class="card rv" data-glow><h3>4 · Guía de preparación</h3><p>Instalación por sistema operativo, verificación previa y el enlace al sandbox para quien no pueda usar código propio.</p></div>
+      <div class="card rv" data-d="1" data-glow><h3>5 · Rúbrica del reto</h3><p>Los seis criterios de aceptación convertidos en lista verificable, más las tres evaluaciones de ejemplo.</p></div>
+      <div class="card rv" data-d="2" data-glow><h3>6 · Seguimiento a 30 días</h3><p>Mecánica del check-in, formato del reporte y qué se hace con las skills que el grupo publicó.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fin">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <img src="MITC blanco.png" alt="MITC" style="height:28px">
+        <span style="color:rgba(231,236,247,.3)">+</span>
+        <img src="logo30color.png" alt="OmniSys" style="height:28px;filter:brightness(0) invert(1)">
+      </div>
+      <div>Instructor: <strong style="color:#fff">Erick Vázquez</strong> · Director de Innovación y Delivery</div>
+      <div style="margin-top:4px"><a href="mailto:erick.vazquez@omnisysmx.com" style="color:#8FB0F0">erick.vazquez@omnisysmx.com</a></div>
+      <div style="margin-top:4px">30 de septiembre · 9:00 AM</div>
+    </div>
+    <div style="text-align:right">
+      <div class="footer-powered">
+        <span>Impulsado por</span>
+        <img src="MITC blanco.png" alt="Monterrey IT Cluster">
+      </div>
+      <div style="margin-top:10px">Brief de curso · v3.0<br>Skills con Claude Code</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Scroll progress + nav hide/show ──
+  var prog = document.getElementById('prog');
+  var nav = document.getElementById('mainNav');
+  var lastY = 0;
+  addEventListener('scroll', function(){
+    var h = document.documentElement;
+    var y = h.scrollTop;
+    prog.style.width = (y/(h.scrollHeight-h.clientHeight)*100)+'%';
+    if(y > 60){
+      if(y > lastY+4) nav.classList.add('hidden');
+      else if(y < lastY-4) nav.classList.remove('hidden');
+      nav.classList.add('scrolled');
+      nav.style.background = 'rgba(255,255,255,.88)';
+    } else {
+      nav.classList.remove('hidden','scrolled');
+      nav.style.background = '';
+    }
+    lastY = y;
+  }, {passive:true});
+
+  // ── Particles ──
+  if(!reduce){
+    var pc = document.getElementById('particles');
+    for(var i=0;i<25;i++){
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100+'%';
+      p.style.top = (60+Math.random()*40)+'%';
+      var s = 1.5+Math.random()*2.5;
+      p.style.width = p.style.height = s+'px';
+      p.style.animationDuration = (8+Math.random()*12)+'s';
+      p.style.animationDelay = (Math.random()*10)+'s';
+      p.style.opacity = .06+Math.random()*.1;
+      pc.appendChild(p);
+    }
+  }
+
+  // ── Terminal mouse parallax ──
+  if(!reduce){
+    var termDevice = document.getElementById('termDevice');
+    var termWrap = document.getElementById('termWrap');
+    var tiltX=0,tiltY=0,targetTX=0,targetTY=0;
+    document.querySelector('.hero').addEventListener('mousemove',function(e){
+      if(!termWrap) return;
+      var r = termWrap.getBoundingClientRect();
+      targetTX = ((e.clientY-(r.top+r.height/2))/r.height)*-5;
+      targetTY = ((e.clientX-(r.left+r.width/2))/r.width)*7;
+    });
+    document.querySelector('.hero').addEventListener('mouseleave',function(){targetTX=0;targetTY=0});
+    (function animTilt(){
+      tiltX += (targetTX-tiltX)*.08;
+      tiltY += (targetTY-tiltY)*.08;
+      if(termDevice) termDevice.style.transform = 'rotateX('+tiltX+'deg) rotateY('+tiltY+'deg)';
+      requestAnimationFrame(animTilt);
+    })();
+  }
+
+  // ── Card spotlight ──
+  document.querySelectorAll('[data-glow]').forEach(function(card){
+    card.addEventListener('mousemove',function(e){
+      var r = card.getBoundingClientRect();
+      card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+      card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
+
+  // ── Terminal typing ──
+  var lines = [
+    {t:'---', c:'dim'},
+    {t:'name: resumiendo-cambios', c:'k'},
+    {t:'description: Resume los cambios sin commitear y', c:'v'},
+    {t:'  señala lo riesgoso. Úsala cuando el usuario', c:'v'},
+    {t:'  pregunte qué cambió o pida un commit.', c:'v'},
+    {t:'allowed-tools: Read Grep', c:'k'},
+    {t:'---', c:'dim'},
+    {t:'', c:''},
+    {t:'## Cambios actuales', c:'h'},
+    {t:'!`git diff HEAD`', c:'v'},
+    {t:'', c:''},
+    {t:'$ claude', c:'dim'},
+    {t:'> ¿qué cambié hoy?', c:'v'},
+    {t:'✓ skill resumiendo-cambios cargada', c:'ok'},
+    {t:'✓ 3 archivos · 1 riesgo detectado', c:'ok'}
+  ];
+  var term = document.getElementById('term');
+  if(term){
+    if(reduce){
+      term.innerHTML = lines.map(function(l){return '<span class="'+l.c+'">'+l.t.replace(/</g,'&lt;')+'</span>';}).join('\n');
+    } else {
+      var li=0,ci=0,out='';
+      (function type(){
+        if(li>=lines.length){term.innerHTML=out;return}
+        var L=lines[li];
+        if(ci===0) out+=(li?'\n':'')+'<span class="'+L.c+'">';
+        if(ci<L.t.length){
+          out+=L.t.charAt(ci).replace('<','&lt;');ci++;
+          term.innerHTML=out+'</span><span class="caret"></span>';
+          setTimeout(type,17);
+        }else{
+          out+='</span>';li++;ci=0;
+          term.innerHTML=out+'<span class="caret"></span>';
+          setTimeout(type,L.t===''?90:(L.c==='ok'?330:130));
+        }
+      })();
+    }
+  }
+
+  // ── Hero stats counter ──
+  var heroObs = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el=e.target,to=+el.dataset.to;
+      if(reduce){el.textContent=to;heroObs.unobserve(el);return}
+      var t0=null;
+      requestAnimationFrame(function step(ts){
+        if(!t0)t0=ts;
+        var p=Math.min((ts-t0)/1400,1);
+        el.textContent=Math.round(to*(1-Math.pow(1-p,4)));
+        if(p<1)requestAnimationFrame(step);
+      });
+      heroObs.unobserve(el);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('.stat .v[data-to]').forEach(function(el){heroObs.observe(el)});
+
+  // ── Reveal ──
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}});
+  },{threshold:.14,rootMargin:'0px 0px -50px 0px'});
+  document.querySelectorAll('.rv,#rail').forEach(function(el){io.observe(el)});
+
+  // ── KPI counters ──
+  var cio = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el=e.target,to=+el.dataset.to,sm=el.querySelector('small');
+      var sfx=sm?sm.outerHTML:'';
+      if(reduce){el.innerHTML=to+sfx;cio.unobserve(el);return}
+      var t0=null;
+      requestAnimationFrame(function step(ts){
+        if(!t0)t0=ts;
+        var p=Math.min((ts-t0)/1200,1);
+        el.innerHTML=Math.round(to*(1-Math.pow(1-p,3)))+sfx;
+        if(p<1)requestAnimationFrame(step);
+      });
+      cio.unobserve(el);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('.kpi .num[data-to]').forEach(function(el){cio.observe(el)});
+
+  // ── Accordion ──
+  document.querySelectorAll('.mod').forEach(function(m){
+    m.querySelector('.mod-h').addEventListener('click',function(){
+      var open=m.classList.toggle('open');
+      this.setAttribute('aria-expanded',open?'true':'false');
+    });
+  });
+
+  // ── Grados de libertad tabs ──
+  var tabs=document.querySelectorAll('.gl-tab');
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      var i=+t.dataset.gl;
+      tabs.forEach(function(x){x.classList.remove('on')});
+      t.classList.add('on');
+      document.querySelectorAll('.gl-p').forEach(function(p){p.classList.toggle('on',+p.dataset.p===i)});
+    });
+  });
+
+  // ── Scroll spy ──
+  var links=[].slice.call(document.querySelectorAll('.nav a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))});
+  var sio=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var i=secs.indexOf(e.target);
+      links.forEach(function(a,j){a.classList.toggle('on',j===i)});
+    });
+  },{rootMargin:'-15% 0px -70% 0px'});
+  secs.forEach(function(s){if(s)sio.observe(s)});
+
+  // ── Countdown ──
+  var target = new Date('2026-09-30T09:00:00-06:00').getTime();
+  var cdD=document.getElementById('cd-days'),cdH=document.getElementById('cd-hours'),
+      cdM=document.getElementById('cd-mins'),cdS=document.getElementById('cd-secs');
+  function pad(n){return n<10?'0'+n:n}
+  function tick(){
+    var now=Date.now(),diff=target-now;
+    if(diff<=0){cdD.textContent='00';cdH.textContent='00';cdM.textContent='00';cdS.textContent='00';return}
+    var d=Math.floor(diff/864e5);diff%=864e5;
+    var h=Math.floor(diff/36e5);diff%=36e5;
+    var m=Math.floor(diff/6e4);diff%=6e4;
+    var s=Math.floor(diff/1e3);
+    cdD.textContent=pad(d);cdH.textContent=pad(h);cdM.textContent=pad(m);cdS.textContent=pad(s);
+  }
+  tick();setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
